@@ -1,0 +1,36 @@
+<%
+  settingForAllProjects = Setting.plugin_redmine_feature_branches[:for_all_projects]
+  settingForSelectedProjects  = Setting.plugin_redmine_feature_branches[:selected_project_ids] || []
+  enabled = settingForAllProjects || settingForSelectedProjects.include?(issue.project.id.to_s)
+  if enabled
+    feature_branches = []
+    repositories = issue.project.repositories
+    regexp = Regexp.new('\b' + issue.id.to_s + '\b')
+    for repository in repositories
+      repository.branches.grep(regexp).each{|e| feature_branches.push({:repository => repository, :branch => e})}
+    end
+  end
+%>
+<% if enabled && !feature_branches.empty? %>
+  <hr/>
+  <p>
+    <strong>Featurebranches</strong>
+  </p>
+  <% for entry in feature_branches %>
+    <p>
+      <%= l(:label_repository) %>
+      <%= link_to(entry[:repository].identifier, {
+          :controller => 'repositories',
+          :action => 'show',
+          :id => issue.project,
+          :repository_id => entry[:repository].identifier }) %>,
+      <%= l(:label_branch) %>:
+      <%= link_to(entry[:branch], {
+          :controller => 'repositories',
+          :action => 'show',
+          :id => issue.project,
+          :repository_id => entry[:repository].identifier,
+          :rev => entry[:branch] }) %>
+      </p>
+  <% end %>
+<% end %>

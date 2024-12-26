@@ -1,0 +1,42 @@
+<% settings = {} unless settings.is_a? Hash %>
+<h3><%= l(:label_settings) %></h3>
+<fieldset class="box">
+  <legend><%= toggle_checkboxes_link('.projects-selection input:enabled') %><%= l(:label_project_plural) %></legend>
+  <p>
+    <label for="settings_for_all_projects"><%=l(:field_is_for_all)%> </label>
+    <%=
+      check_box_tag 'settings[for_all_projects]',
+        true,
+        !!settings['for_all_projects'],
+        :data => {:disables => '#settings_selected_project_ids input'}
+    %>
+  </p>
+  <hr />
+  <div class="projects-selection" id="settings_selected_project_ids">
+    <% project_ids = settings['selected_project_ids'] || [] %>
+    <%=
+    render_project_nested_lists(Project.all) do |p|
+      content_tag('label',
+        check_box_tag(
+          'settings[selected_project_ids][]',
+          p.id,
+          project_ids.include?(p.id.to_s),
+          :id => nil
+        ) + ' ' + p.to_s
+      )
+    end
+    %>
+    <%= hidden_field_tag('settings[selected_project_ids][]', '', :id => nil) %>
+  </div>
+</fieldset>
+<%# To remove a hard-coded CSS class from app/views/settings/plugin.html.erb %>
+<% content_for :header_tags do %>
+  <script type='text/javascript'>
+    window.onload = function () {
+      const settingsBoxes = document.querySelectorAll('form[action = "/settings/plugin/redmine_feature_branches"] > div.tabular');
+      for (let box of settingsBoxes) {
+        box.classList.remove('tabular');
+      }
+    };
+  </script>
+<% end %>
